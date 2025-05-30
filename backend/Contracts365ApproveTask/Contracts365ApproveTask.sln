@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36119.2
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts365ApproveTask", "Contracts365ApproveTask.csproj", "{ADEBAAC6-930D-45F7-BBDA-FE7B02B6CDE0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts365ApproveTask.Test", "..\Contract365ApproveTask.Test\Contracts365ApproveTask.Test.csproj", "{B3567293-A954-413F-AA3A-7D71023E2BCF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ADEBAAC6-930D-45F7-BBDA-FE7B02B6CDE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADEBAAC6-930D-45F7-BBDA-FE7B02B6CDE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADEBAAC6-930D-45F7-BBDA-FE7B02B6CDE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADEBAAC6-930D-45F7-BBDA-FE7B02B6CDE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3567293-A954-413F-AA3A-7D71023E2BCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3567293-A954-413F-AA3A-7D71023E2BCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3567293-A954-413F-AA3A-7D71023E2BCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3567293-A954-413F-AA3A-7D71023E2BCF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {50A64B9F-7756-4404-B568-C98FDA3C33D5}
+	EndGlobalSection
+EndGlobal
