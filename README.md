@@ -19,20 +19,43 @@ contracts365-test/
 │   │   │   ├── app.component.ts  # Main component with UI logic
 │   │   │   ├── app.component.html # UI template with email input and buttons
 │   │   │   ├── app.component.scss # UI styling
+│   │   │   ├── models/
+│   │   │   │   └── app.model.ts  # Model for StartApprovalResponse
 │   │   │   ├── services/
 │   │   │   │   └── approval.service.ts # Service for API calls
-│   ├── package.json             # Front-end dependencies
+│   │   │   ├── shared/
+│   │   │   │   └── interceptors/
+│   │   │   │       └── error.interceptor.ts # HTTP error interceptor
+│   │   ├── app.config.ts         # Application configuration
+│   ├── package.json              # Front-end dependencies
 ├── backend/                     # Azure Functions back-end
-│   ├── Contract365ApproveTask/
-│   │   ├── TaskApprovalOrchestration.cs # Durable Functions logic
+│   ├── Contracts365ApproveTask/
+│   │   ├── Constants/
+│   │   │   └── TaskApprovalConstants.cs # Constants for errors, events, etc.
 │   │   ├── Dtos/
 │   │   │   ├── ApprovalRequest.cs # DTO for API requests
 │   │   │   ├── EmailRequest.cs    # DTO for email simulation
+│   │   ├── Exceptions/
+│   │   │   ├── Contracts365ApproveTaskException.cs # Base exception
+│   │   │   ├── EmailSendingException.cs # Email error
+│   │   │   ├── EmailValidationException.cs # Email validation error
+│   │   │   ├── InvalidApprovalEventException.cs # Invalid event error
+│   │   │   ├── InvalidInputException.cs # Input validation error
+│   │   │   ├── NotFoundException.cs # Not found error
+│   │   ├── Helpers/
+│   │   │   └── EmailHelper.cs     # Email validation utility
+│   │   ├── Middlewares/
+│   │   │   └── ExceptionHandlingMiddleware.cs # Global exception handling
+│   │   ├── Services/
+│   │   │   ├── EmailService.cs    # Email simulation service
+│   │   │   ├── IEmailService.cs   # Email service interface
+│   │   ├── TaskApprovalOrchestration.cs # Durable Functions logic
+│   │   ├── Program.cs             # Functions host configuration
 │   │   ├── local.settings.json    # Local configuration (CORS, storage)
 │   │   ├── host.json             # Azure Functions host configuration
-│   ├── Contract365ApproveTask.Tests/
+│   ├── Contracts365ApproveTask.Tests/
 │   │   ├── TaskApprovalOrchestrationTests.cs # Unit tests
-│   ├── Contract365ApproveTask.sln # Solution file
+│   ├── Contracts365ApproveTask.sln # Solution file
 ├── README.md                    # This file
 ```
 
@@ -41,7 +64,7 @@ contracts365-test/
 - **.NET SDK**: 8.0 (for back-end).
 - **Azure Functions Core Tools**: v4 (for running Azure Functions locally).
 - **Azurite**: For local Azure Storage emulation.
-- **Visual Studio 2022**: For back-end development and testing (optional).
+- **Visual Studio 2022** or **Visual Studio Code**: For development and testing.
 - **Windows**: Tested on Windows 10/11.
 
 ## Setup and Running Locally
@@ -71,73 +94,80 @@ contracts365-test/
    ```cmd
    ng serve
    ```
-4. Access the application at `http://localhost:4200`.
+   - Access the application at `http://localhost:4200`.
 
 ### Back-end Setup
 1. Navigate to the back-end directory:
    ```cmd
-   cd backend\Contract365ApproveTask
+   cd backend\Contracts365ApproveTask
    ```
 2. Start Azurite (in a separate Command Prompt):
    ```cmd
-   azurite
+   azurite --silent
    ```
 3. Run the back-end:
    ```cmd
-   func start
+   func start --port 7078
    ```
-   - The API will be available at `http://localhost:7069/api`.
+   - The API will be available at `http://localhost:7078/api`.
 
 ### Running Unit Tests
 1. Navigate to the test directory:
    ```cmd
-   cd backend\Contract365ApproveTask.Tests
+   cd backend\Contracts365ApproveTask.Tests
    ```
 2. Run tests:
    ```cmd
    dotnet test
    ```
-   - Expected output: 5 tests passed, covering orchestration logic and email simulation.
+   - Expected output: Tests for `EmailService` and email validation pass.
 
 ## API Endpoints
 - **POST `/api/StartApproval`**:
   - Body: `{ "userEmail": "<email>" }`
   - Response: `{ "instanceId": "<guid>", "userEmail": "<email>", "status": "Started" }`
-  - Simulates sending a "start" email.
+  - Simulates sending a "Task Approval Started" email.
 - **POST `/api/Approve`**:
   - Body: `{ "instanceId": "<guid>" }`
   - Response: `{ "message": "Approval event sent." }`
-  - Simulates sending an "approval" email.
+  - Simulates sending a "Task Approved" email.
 - **POST `/api/Reject`**:
   - Body: `{ "instanceId": "<guid>" }`
   - Response: `{ "message": "Rejection event sent." }`
-  - Simulates sending a "rejection" email.
+  - Simulates sending a "Task Rejected" email.
 
 ## Implementation Details
 ### Front-end
-- **Technology**: Angular 17 with standalone components.
+- **Technology**: Angular 17 with standalone components, Angular Material, and `ngx-toastr` for notifications.
 - **UI/UX**:
-  - Input field for email using Angular Material (`mat-form-field`).
-  - Three buttons (`Start Approval`, `Approve`, `Reject`) with clear labels, disabled states, and responsive design.
-  - Error message for empty email input.
-- **API Integration**: `ApprovalService` handles HTTP requests to back-end endpoints.
+  - Input field for email with validation (required, email format).
+  - Three buttons (`Start Approval`, `Approve`, `Reject`) with Material design, disabled when invalid (e.g., no email or `instanceId`).
+  - Toast notifications for success (e.g., "Approval process started") and errors (e.g., "Email is required").
+  - Centered, responsive layout with clear typography.
+- **API Integration**: `ApprovalService` handles HTTP requests with error interception via `error.interceptor.ts`.
 
 ### Back-end
-- **Technology**: Azure Functions v4 with C# Durable Functions (in-process).
+- **Technology**: Azure Functions v4 with C# Durable Functions (Isolated mode).
 - **Orchestration**:
-  - `RunOrchestrator`: Manages approval workflow, waits for `ApprovalEvent`, and simulates email notifications.
-  - Uses `EmailRequest` DTO for email simulation.
+  - `RunOrchestrator`: Waits indefinitely for an `ApprovalEvent`, triggers email simulation via `SendEmail` activity.
+  - Uses `EmailRequest` DTO for email parameters.
 - **HTTP Triggers**:
-  - `StartApproval`, `Approve`, `Reject` handle API requests with JSON responses.
-  - Input validation ensures `userEmail` and `instanceId` are provided.
+  - `StartApproval`, `Approve`, `Reject` validate inputs and return JSON responses.
+  - Custom exceptions (`InvalidInputException`, `EmailValidationException`) ensure robust error handling.
 - **Email Simulation**:
-  - `SendEmail` activity function logs email details to console and returns `true`.
-  - Designed for easy replacement with SendGrid (update `SendEmail` function body).
+  - `EmailService` logs email details to console, returning `true`.
+  - Designed for easy integration with SendGrid by updating `SendEmailAsync`.
 - **Data Modeling**:
-  - `ApprovalRequest`: DTO for API request payloads.
-  - `EmailRequest`: DTO for email simulation parameters.
+  - `ApprovalRequest`: DTO for API payloads (`UserEmail`, `InstanceId`).
+  - `EmailRequest`: DTO for email simulation (`Email`, `Subject`, `Content`).
+- **Error Handling**:
+  - `ExceptionHandlingMiddleware` catches exceptions, returning appropriate HTTP status codes and messages.
+  - Custom exceptions (`Contracts365ApproveTaskException` and derivatives) for specific error cases.
+- **Constants**: `TaskApprovalConstants` centralizes error messages, events, and email templates for maintainability.
 
 ## Notes
-- **Email Simulation**: Real email sending (via SendGrid) was omitted per agreement with the client, replaced with console logging to simulate notifications.
+- **Email Simulation**: Email sending is simulated via console logging. To use SendGrid, update `EmailService.SendEmailAsync` with SendGrid API calls.
 - **CORS**: Configured in `local.settings.json` to allow `http://localhost:4200` for local testing.
-- **Durable Functions**: The application demonstrates orchestration, external events, and activity functions, ready for further discussion in interviews.
+- **Durable Functions**: Demonstrates orchestration, external events, and activity functions, ready for interview discussions on scalability, state management, and error handling.
+- **Unit Tests**: Cover `EmailService` and validation logic. Additional tests for orchestration can be added if required.
+- **Deployment**: Backend can be deployed to Azure Functions, frontend to Azure Static Web Apps.

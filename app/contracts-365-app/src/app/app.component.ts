@@ -6,7 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -25,47 +25,46 @@ export class AppComponent {
    public title = 'contract-365-app';
    public userEmail: string = '';
   public instanceId?: string = '';
-   constructor(private approvalService: ApprovalService) {}
+   constructor(private approvalService: ApprovalService,
+    private toastr: ToastrService
+   ) {}
 
   startApproval() {
     if (!this.userEmail) {
-      console.log('Email is required');
+      this.toastr.error('Email is required.', 'Error');
       return;
     }
     this.approvalService.startApproval(this.userEmail).subscribe({
       next: (response) => {
         this.instanceId = response.instanceId;
-        console.log('Start Approve:', response);
-      },
-      error: (error) => console.error('Error:', error)
+        this.toastr.success('Approval process started', 'Success');
+      }
     });
   }
 
   approve() {
      if (!this.instanceId) {
-      console.log('Instance Id is invalid.');
+      this.toastr.error('Instance Id is invalid.', 'Error');
       return;
     }
     this.approvalService.approve(this.instanceId).subscribe({
       next: (response) => {
-        console.log('Approve:', response);
+        this.toastr.success('Task is approved', 'Success');
         this.instanceId = '';
-      },
-      error: (error) => console.log('Error:', error)
+      }
     });
   }
 
   reject() {
      if (!this.instanceId) {
-      console.log('Instance Id is invalid.');
+       this.toastr.error('Instance Id is invalid.', 'Error');
       return;
     }
     this.approvalService.reject(this.instanceId).subscribe({
       next: (response) => {
-        console.log('Reject:', response);
+        this.toastr.success('Task is rejected', 'Success');
         this.instanceId = '';
-      },
-      error: (error) => console.log('Error:', error)
+      }
     });
   }
 }

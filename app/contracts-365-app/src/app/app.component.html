@@ -3,7 +3,6 @@
   <mat-form-field appearance="outline">
     <mat-label>Email</mat-label>
     <input matInput [(ngModel)]="userEmail" placeholder="Enter your email" type="email" required>
-    <mat-error *ngIf="userEmail?.length === 0">Email is required</mat-error>
   </mat-form-field>
   <button mat-raised-button color="primary" (click)="startApproval()" [disabled]="!userEmail">Start Approve</button>
   <button mat-raised-button color="accent" (click)="approve()" [disabled]="!instanceId">Approve</button>
