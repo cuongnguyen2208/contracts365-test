@@ -2,10 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { StartApprovalResponse } from '../models/app.model';
+import { environment } from '../../environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApprovalService {
-  private apiUrl = 'http://localhost:7078/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
